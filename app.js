@@ -27,6 +27,7 @@
     share: '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5.5A1.5 1.5 0 004 12.5v7A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5v-7a1.5 1.5 0 00-1.5-1.5H18"/>',
     addbox: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
     dots: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+    moon: '<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>',
     vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9v6M19.5 9v6M2 10.5v3M22 10.5v3"/>',
     kebab: '<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
     menu: '<path d="M5 7h14M5 12h14M5 17h9"/>'
@@ -434,6 +435,7 @@
         <a class="li" href="#/checkin" style="color:inherit;text-decoration:none">${icon('chart', 20)}<span style="flex:1">Wellbeing check-in</span>${icon('next', 18)}</a>
         <a class="li" href="#/support" style="color:inherit;text-decoration:none">${icon('shield', 20)}<span style="flex:1">Safety and support</span>${icon('next', 18)}</a>
         <a class="li" href="#/dashboard" style="color:inherit;text-decoration:none">${icon('chart', 20, 'var(--thames)')}<span style="flex:1">SU impact dashboard (demo)</span>${icon('next', 18)}</a>
+        <button type="button" class="li li-btn" data-act="theme" aria-pressed="${S.theme === 'dark'}">${icon('moon', 20)}<span style="flex:1;text-align:left">Dark mode</span><span class="small ${S.theme === 'dark' ? 'green' : 'muted'}" style="font-weight:600">${S.theme === 'dark' ? 'On' : 'Off'}</span></button>
         <button type="button" class="li li-btn" data-act="haptics" aria-pressed="${S.haptics !== false}">${icon('vibrate', 20)}<span style="flex:1;text-align:left">Vibration on taps</span><span class="small ${S.haptics !== false ? 'green' : 'muted'}" style="font-weight:600">${S.haptics !== false ? 'On' : 'Off'}</span></button>
       </div>
       ${standalone ? '' : `<div id="install" class="card warm install">${icon('download', 22)}<span style="flex:1"><span class="card-title" style="font-size:15px;display:block">Add Westmates to your home screen</span><span class="small muted" id="install-text">${installText()}</span></span>
@@ -610,7 +612,10 @@
   }
   window.addEventListener('resize', () => moveLens(document.querySelector('#tabs a[aria-current]'), true));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => moveLens(document.querySelector('#tabs a[aria-current]'), true));
+  // Light theme for everyone by default; dark is a choice on the Me page.
+  function applyTheme() { document.documentElement.dataset.theme = S.theme === 'dark' ? 'dark' : 'light'; }
   function render() {
+    applyTheme();
     if (GATED) return renderGate();
     const r = route();
     const fn = SCREENS[r.name] || notFound;
@@ -633,6 +638,9 @@
     let bg = first ? getComputedStyle(first).backgroundColor : '';
     if (!bg || bg === 'transparent' || /rgba\(.*,\s*0\)$/.test(bg)) bg = getComputedStyle($('#app')).backgroundColor;
     document.documentElement.style.setProperty('--status-fill', bg);
+    // On phones the page background also follows the top of the screen: iOS tints its haze behind the clock
+    // from it, so the haze now matches each screen instead of showing a light fade over a dark header.
+    if (window.innerWidth <= 520) { document.documentElement.style.backgroundColor = bg; document.body.style.backgroundColor = bg; }
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', bg);
   }
@@ -750,6 +758,8 @@
       render();
     } else if (act === 'ci-redo') {
       S.checkins = {}; ci = { phase: 'before', lonely: null, sat: null }; save(); render();
+    } else if (act === 'theme') {
+      S.theme = S.theme === 'dark' ? 'light' : 'dark'; save(); render();
     } else if (act === 'haptics') {
       S.haptics = S.haptics === false; save(); render(); if (S.haptics) haptic('tap');
     } else if (act === 'gate-plat') {

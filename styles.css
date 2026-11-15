@@ -18,17 +18,16 @@
   --fade-from: rgba(250,247,242,0); --fade-to: rgba(250,247,242,1);
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #121212; --card: #1c1b19; --ink: #f3efe7; --ink-muted: #b3ada2; --hairline: #2f2c28;
-    --night: #2b3a52; --on-night: #f3efe7; --on-night-muted: #c9c3b8;
-    --lantern: #f2b455; --on-lantern: #141414; --lantern-text: #f2b455; --lantern-soft: #3a2c16;
-    --thames: #8db4e3; --thames-soft: #22324a; --park: #7cc6a0; --park-soft: #1f3a2d; --signal: #f2867e;
-    --glass-top: rgba(44,42,39,.72); --glass-bottom: rgba(28,27,25,.62); --glass-edge: rgba(255,255,255,.14);
-    --glass-shine: rgba(255,255,255,.18); --glass-pill-top: rgba(255,255,255,.16); --glass-pill-bottom: rgba(255,255,255,.07);
-    --fade-from: rgba(18,18,18,0); --fade-to: rgba(18,18,18,1);
-    color-scheme: dark;
-  }
+/* Dark mode is a choice in the app (Me > Dark mode), not taken from the phone's setting. */
+:root[data-theme="dark"] {
+  --paper: #121212; --card: #1c1b19; --ink: #f3efe7; --ink-muted: #b3ada2; --hairline: #2f2c28;
+  --night: #2b3a52; --on-night: #f3efe7; --on-night-muted: #c9c3b8;
+  --lantern: #f2b455; --on-lantern: #141414; --lantern-text: #f2b455; --lantern-soft: #3a2c16;
+  --thames: #8db4e3; --thames-soft: #22324a; --park: #7cc6a0; --park-soft: #1f3a2d; --signal: #f2867e;
+  --glass-top: rgba(44,42,39,.72); --glass-bottom: rgba(28,27,25,.62); --glass-edge: rgba(255,255,255,.14);
+  --glass-shine: rgba(255,255,255,.18); --glass-pill-top: rgba(255,255,255,.16); --glass-pill-bottom: rgba(255,255,255,.07);
+  --fade-from: rgba(18,18,18,0); --fade-to: rgba(18,18,18,1);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }

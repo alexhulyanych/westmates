@@ -2,7 +2,8 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<script>if (navigator.standalone) document.documentElement.classList.add('ios-app');</script>
+<script>if (navigator.standalone) document.documentElement.classList.add('ios-app');
+try { if ((JSON.parse(localStorage.getItem('westmates-demo-v1')) || {}).theme === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (e) {}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Westmates</title>
 <meta name="description" content="Westmates: find mates, events and daily challenges at the University of Westminster. Student concept demo.">
