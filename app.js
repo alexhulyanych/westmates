@@ -27,6 +27,7 @@
     share: '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5.5A1.5 1.5 0 004 12.5v7A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5v-7a1.5 1.5 0 00-1.5-1.5H18"/>',
     addbox: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
     dots: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+    vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9v6M19.5 9v6M2 10.5v3M22 10.5v3"/>',
     kebab: '<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
     menu: '<path d="M5 7h14M5 12h14M5 17h9"/>'
   };
@@ -433,7 +434,7 @@
         <a class="li" href="#/checkin" style="color:inherit;text-decoration:none">${icon('chart', 20)}<span style="flex:1">Wellbeing check-in</span>${icon('next', 18)}</a>
         <a class="li" href="#/support" style="color:inherit;text-decoration:none">${icon('shield', 20)}<span style="flex:1">Safety and support</span>${icon('next', 18)}</a>
         <a class="li" href="#/dashboard" style="color:inherit;text-decoration:none">${icon('chart', 20, 'var(--thames)')}<span style="flex:1">SU impact dashboard (demo)</span>${icon('next', 18)}</a>
-        <button type="button" class="li li-btn" data-act="haptics" aria-pressed="${S.haptics !== false}">${icon('phone', 20)}<span style="flex:1;text-align:left">Vibration on taps</span><span class="small ${S.haptics !== false ? 'green' : 'muted'}" style="font-weight:600">${S.haptics !== false ? 'On' : 'Off'}</span></button>
+        <button type="button" class="li li-btn" data-act="haptics" aria-pressed="${S.haptics !== false}">${icon('vibrate', 20)}<span style="flex:1;text-align:left">Vibration on taps</span><span class="small ${S.haptics !== false ? 'green' : 'muted'}" style="font-weight:600">${S.haptics !== false ? 'On' : 'Off'}</span></button>
       </div>
       ${standalone ? '' : `<div id="install" class="card warm install">${icon('download', 22)}<span style="flex:1"><span class="card-title" style="font-size:15px;display:block">Add Westmates to your home screen</span><span class="small muted" id="install-text">${installText()}</span></span>
         <button type="button" class="btn primary sm ${deferredPrompt ? '' : 'hidden'}" data-act="install">Install</button></div>`}
@@ -664,7 +665,7 @@
     document.querySelectorAll(HX_SEL).forEach((el) => {
       if (el.closest('.hx')) return;
       const has = el.querySelector(':scope > .hx');
-      if (on && !has && !el.disabled) { el.classList.add('has-hx'); el.insertAdjacentHTML('beforeend', '<label class="hx" aria-hidden="true"><input type="checkbox" switch></label>'); }
+      if (on && !has && !el.disabled) { el.classList.add('has-hx'); el.insertAdjacentHTML('beforeend', '<label class="hx" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>'); }
       else if ((!on || el.disabled) && has) has.remove();
     });
   }
@@ -672,9 +673,9 @@
     const t = ev.target;
     if (!t.closest) return;
     const hx = t.closest('.hx'); if (!hx) return;
-    // A tap on the overlay. The finger hits the switch, which toggles natively (that is what plays the tick).
-    // Stop the event here and re-run the tap on the real control underneath, so links open and buttons act once.
-    // (A tap that lands on the label's edge reaches the switch as a second, forwarded click, handled the same way.)
+    // A tap on the overlay lands on the see-through label (the switch is hidden, so it never grabs the finger and
+    // scrolling works as normal; a swipe never becomes a click). The label passes the tap to its switch, which
+    // toggles natively: that plays the tick. Both clicks stop here, and the real control underneath gets the tap once.
     ev.stopPropagation();
     // Wait a moment so the switch finishes toggling (and ticking) before the action redraws the screen and removes it.
     if (t.matches('.hx input')) { const host = hx.parentElement; setTimeout(() => host.click(), 0); }
@@ -794,6 +795,9 @@
   new MutationObserver(fitBadge).observe(document.body, { childList: true });
   window.addEventListener('resize', fitBadge);
   [300, 1000, 2000, 4000].forEach((ms) => setTimeout(fitBadge, ms));
+
+  // No pinch-zoom inside the app (iOS gesture events), like a native app.
+  ['gesturestart', 'gesturechange'].forEach((t) => document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
 
   // ---------- Start ----------
   if (!location.hash) location.replace('#/home');
