@@ -433,6 +433,7 @@
         <a class="li" href="#/checkin" style="color:inherit;text-decoration:none">${icon('chart', 20)}<span style="flex:1">Wellbeing check-in</span>${icon('next', 18)}</a>
         <a class="li" href="#/support" style="color:inherit;text-decoration:none">${icon('shield', 20)}<span style="flex:1">Safety and support</span>${icon('next', 18)}</a>
         <a class="li" href="#/dashboard" style="color:inherit;text-decoration:none">${icon('chart', 20, 'var(--thames)')}<span style="flex:1">SU impact dashboard (demo)</span>${icon('next', 18)}</a>
+        <button type="button" class="li li-btn" data-act="haptics" aria-pressed="${S.haptics !== false}">${icon('phone', 20)}<span style="flex:1;text-align:left">Vibration on taps</span><span class="small ${S.haptics !== false ? 'green' : 'muted'}" style="font-weight:600">${S.haptics !== false ? 'On' : 'Off'}</span></button>
       </div>
       ${standalone ? '' : `<div id="install" class="card warm install">${icon('download', 22)}<span style="flex:1"><span class="card-title" style="font-size:15px;display:block">Add Westmates to your home screen</span><span class="small muted" id="install-text">${installText()}</span></span>
         <button type="button" class="btn primary sm ${deferredPrompt ? '' : 'hidden'}" data-act="install">Install</button></div>`}
@@ -650,6 +651,35 @@
     }
   }
 
+  // ---------- Haptics ----------
+  // Android: the Vibration API (moderate strength). iPhone: websites can't vibrate, but since iOS 18 tapping a
+  // hidden 'switch' checkbox plays the system's light haptic tick, so we use that. Can be turned off on the Me page.
+  const VIBES = { tap: 15, success: [15, 60, 25], warn: [35, 70, 35] };
+  function haptic(kind = 'tap') {
+    if (S.haptics === false) return;
+    try {
+      if (typeof navigator.vibrate === 'function' && !isIOS) { navigator.vibrate(VIBES[kind] || 15); return; }
+      if (isIOS) {
+        const label = document.createElement('label'); label.setAttribute('aria-hidden', 'true'); label.style.display = 'none';
+        const input = document.createElement('input'); input.type = 'checkbox'; input.setAttribute('switch', ''); label.appendChild(input);
+        document.head.appendChild(label); label.click(); document.head.removeChild(label);
+      }
+    } catch (e) { /* no haptics on this device */ }
+  }
+  const HAPTIC_KIND = { 'holiday-on': 'success', join: 'success', 'ci-send': 'success', report: 'warn', block: 'warn', reset: 'warn' };
+  document.addEventListener('click', (ev) => {   // runs before the action below (capture phase)
+    if (!ev.isTrusted) return;
+    const t = ev.target.closest('.tabs a, [data-act], button, .btn, .chip'); if (!t || t.disabled) return;
+    if (t.matches('.tabs a') && t.getAttribute('aria-current') === 'page') return;
+    const act = t.dataset.act, val = t.dataset.val;
+    let kind = HAPTIC_KIND[act] || 'tap';
+    if (act === 'task') kind = S.done.ids.includes(val) ? 'tap' : 'success';
+    if (act === 'redeem') { const r = REWARDS.find((x) => x.id === val); kind = r && S.points >= r.cost ? 'success' : 'warn'; }
+    if (act === 'holiday-on' && !S.holiday.breaks.length) kind = 'warn';
+    if (t.type === 'submit' && t.closest('[data-form="event"]')) kind = 'success';
+    haptic(kind);
+  }, true);
+
   document.addEventListener('click', (ev) => {
     const el = ev.target.closest('[data-act]'); if (!el) return;
     const act = el.dataset.act, val = el.dataset.val;
@@ -699,6 +729,8 @@
       render();
     } else if (act === 'ci-redo') {
       S.checkins = {}; ci = { phase: 'before', lonely: null, sat: null }; save(); render();
+    } else if (act === 'haptics') {
+      S.haptics = S.haptics === false; save(); render(); if (S.haptics) haptic('tap');
     } else if (act === 'gate-plat') {
       gatePlat = el.dataset.val; renderGate();
     } else if (act === 'install' && deferredPrompt) {

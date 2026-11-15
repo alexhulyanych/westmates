@@ -213,3 +213,6 @@ body.gated .view { padding-bottom: 0; }
 .gate-skip { text-align: center; color: var(--on-night); font-weight: 600; font-size: 15px; }
 .gate-foot { margin: auto 0 0; text-align: center; font-size: 12px; line-height: 17px; color: var(--on-night-muted); }
 .gate .btn.block { display: flex; justify-content: center; gap: 8px; align-items: center; }
+
+.li-btn { width: 100%; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.list > * + .li-btn { border-top: 1px solid var(--hairline); }
