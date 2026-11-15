@@ -216,3 +216,8 @@ body.gated .view { padding-bottom: 0; }
 
 .li-btn { width: 100%; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: left; }
 .list > * + .li-btn { border-top: 1px solid var(--hairline); }
+
+/* iPhone haptics: invisible native switch over each tappable control (see syncHx in app.js) */
+.has-hx { position: relative; }
+.hx { position: absolute; inset: 0; z-index: 3; margin: 0; display: block; border-radius: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.hx input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }

@@ -624,6 +624,7 @@
     lastName = r.name;
     if (r.name === 'chat') { const c = $('#chat'); if (c) window.scrollTo(0, document.body.scrollHeight); }
     paintStatusBar();
+    syncHx();
   }
   // Colour the strip behind the phone's status bar (and the browser theme colour) to match the top of the screen.
   function paintStatusBar() {
@@ -652,18 +653,37 @@
   }
 
   // ---------- Haptics ----------
-  // Android: the Vibration API (moderate strength). iPhone: websites can't vibrate, but since iOS 18 tapping a
-  // hidden 'switch' checkbox plays the system's light haptic tick, so we use that. Can be turned off on the Me page.
+  // Android: the Vibration API (moderate strength). iPhone: websites can't vibrate. The only haptic a web page can get is
+  // the system tick of a native switch, and since iOS 26.5 only when a finger taps the switch itself (a click from
+  // code is silent). So on iPhones every tappable control gets an invisible switch laid over it (syncHx): the tap
+  // toggles the switch, iOS plays its tick, and we then carry out what the control normally does. Off switch on the Me page.
+  const HX_SEL = '#app a[href], #app button, .btn, .chip, [data-act]';
+  function syncHx() {
+    if (!isIOS) return;
+    const on = S.haptics !== false;
+    document.querySelectorAll(HX_SEL).forEach((el) => {
+      if (el.closest('.hx')) return;
+      const has = el.querySelector(':scope > .hx');
+      if (on && !has && !el.disabled) { el.classList.add('has-hx'); el.insertAdjacentHTML('beforeend', '<label class="hx" aria-hidden="true"><input type="checkbox" switch></label>'); }
+      else if ((!on || el.disabled) && has) has.remove();
+    });
+  }
+  document.addEventListener('click', (ev) => {   // registered first, capture phase
+    const t = ev.target;
+    if (!t.closest) return;
+    const hx = t.closest('.hx'); if (!hx) return;
+    // A tap on the overlay. The finger hits the switch, which toggles natively (that is what plays the tick).
+    // Stop the event here and re-run the tap on the real control underneath, so links open and buttons act once.
+    // (A tap that lands on the label's edge reaches the switch as a second, forwarded click, handled the same way.)
+    ev.stopPropagation();
+    // Wait a moment so the switch finishes toggling (and ticking) before the action redraws the screen and removes it.
+    if (t.matches('.hx input')) { const host = hx.parentElement; setTimeout(() => host.click(), 0); }
+  }, true);
   const VIBES = { tap: 15, success: [15, 60, 25], warn: [35, 70, 35] };
   function haptic(kind = 'tap') {
     if (S.haptics === false) return;
     try {
-      if (typeof navigator.vibrate === 'function' && !isIOS) { navigator.vibrate(VIBES[kind] || 15); return; }
-      if (isIOS) {
-        const label = document.createElement('label'); label.setAttribute('aria-hidden', 'true'); label.style.display = 'none';
-        const input = document.createElement('input'); input.type = 'checkbox'; input.setAttribute('switch', ''); label.appendChild(input);
-        document.head.appendChild(label); label.click(); document.head.removeChild(label);
-      }
+      if (typeof navigator.vibrate === 'function' && !isIOS) navigator.vibrate(VIBES[kind] || 15);
     } catch (e) { /* no haptics on this device */ }
   }
   const HAPTIC_KIND = { 'holiday-on': 'success', join: 'success', 'ci-send': 'success', report: 'warn', block: 'warn', reset: 'warn' };
