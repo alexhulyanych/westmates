@@ -84,6 +84,7 @@
 
   // ---------- State ----------
   const KEY = 'westmates-demo-v1';
+  const APP_VERSION = '19';   // shown at the bottom of the Me page
   const today = () => new Date().toISOString().slice(0, 10);
   const fresh = () => ({
     name: 'Alex',
@@ -441,7 +442,7 @@
       ${standalone ? '' : `<div id="install" class="card warm install">${icon('download', 22)}<span style="flex:1"><span class="card-title" style="font-size:15px;display:block">Add Westmates to your home screen</span><span class="small muted" id="install-text">${installText()}</span></span>
         <button type="button" class="btn primary sm ${deferredPrompt ? '' : 'hidden'}" data-act="install">Install</button></div>`}
       <button type="button" class="btn danger block" data-act="reset">Reset demo</button>
-      <p class="tiny muted demo-note">Westmates is a student concept for module 6LEAD001W, not an official University of Westminster app. People, events and numbers are sample data, saved only on this device.</p>
+      <p class="tiny muted demo-note">Westmates is a student concept for module 6LEAD001W, not an official University of Westminster app. People, events and numbers are sample data, saved only on this device. App version ${APP_VERSION}.</p>
     </div>`;
   }
 
@@ -813,6 +814,13 @@
   if (!location.hash) location.replace('#/home');
   render();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
+    // When a newer version takes over, reload once so it shows straight away (not on the first ever install).
+    const hadController = !!navigator.serviceWorker.controller; let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloading) { reloading = true; location.reload(); } });
+    // Check for a new version whenever the app comes back to the screen.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {});
+    });
   }
 })();
