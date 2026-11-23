@@ -278,3 +278,4 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
 .opt svg { flex-shrink: 0; color: var(--ink-muted); }
 .opt[aria-pressed="true"] svg { color: var(--ink); }
 .task-pts { font-weight: 600; font-size: 14px; min-width: 30px; text-align: right; }
+.btn-pts { display: inline-flex; align-items: center; background: rgba(20,20,20,.12); border-radius: var(--r-pill); padding: 2px 9px; font-size: 13px; line-height: 18px; font-weight: 700; }

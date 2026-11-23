@@ -147,7 +147,7 @@
 
   // ---------- State ----------
   const KEY = 'westmates-demo-v1';
-  const APP_VERSION = '20-visual-prototype';   // shown at the bottom of the Me page
+  const APP_VERSION = '20';   // shown at the bottom of the Me page
   const today = () => new Date().toISOString().slice(0, 10);
   const fresh = () => ({
     name: 'Alex',
@@ -395,7 +395,7 @@
       : `<div class="row"><span class="stack">${faces.map((m) => avatar(m, 'sm')).join('')}</span><strong>${j ? `You and ${going - 1} others are going` : `${going} going`}</strong></div>`}
       ${mine ? '' : j ? `<button type="button" class="btn outline-green block" data-act="leave" data-val="${e.id}">${icon('check', 20)}You're going · tap to leave</button>
              <p class="small green" style="margin:0;text-align:center;font-weight:600">+10 pts added. Check in on the day for +20 more.</p>`
-          : `<button type="button" class="btn primary block" data-act="join" data-val="${e.id}">Join · +10 pts</button>`}
+          : `<button type="button" class="btn primary block" data-act="join" data-val="${e.id}">Join <span class="btn-pts">+10 pts</span></button>`}
       <div class="row between" style="margin-top:4px">
         <button type="button" class="link-btn red" data-act="report" data-val="${esc(e.title)}">Report event</button>
         <a class="link-btn" href="#/support">Need help now?</a>
@@ -413,7 +413,7 @@
       <div class="field"><label for="ev-where">Where?</label><input id="ev-where" name="where" class="input" required maxlength="60" placeholder="e.g. Outside Regent Street campus"></div>
       <div class="field"><label for="ev-desc">Anything else?</label><textarea id="ev-desc" name="desc" class="input" rows="3" maxlength="200" placeholder="Optional"></textarea></div>
       <label class="row small" style="min-height:44px;cursor:pointer"><input type="checkbox" name="holiday" ${S.holiday.on ? 'checked' : ''} style="width:22px;height:22px"> It's during a break (holiday event)</label>
-      <button class="btn primary block">Post event · +15 pts</button>
+      <button class="btn primary block">Post event <span class="btn-pts">+15 pts</span></button>
     </form>`;
   }
 
@@ -488,7 +488,7 @@
         <div class="scale">${Array.from({ length: 11 }, (_, n) => `<button type="button" data-act="ci-sat" data-val="${n}" aria-pressed="${ci.sat === n}" aria-label="${n} out of 10">${n}</button>`).join('')}</div>
         <div class="row between tiny muted"><span class="row" style="gap:4px">${icon('face0', 18, 'currentColor', 1.8)}Not at all</span><span class="row" style="gap:4px">Completely${icon('face4', 18, 'currentColor', 1.8)}</span></div>
       </fieldset>
-      <button type="button" class="btn primary block" data-act="ci-send" ${ci.lonely === null || ci.sat === null ? 'disabled' : ''}>Send check-in · +5 pts</button>
+      <button type="button" class="btn primary block" data-act="ci-send" ${ci.lonely === null || ci.sat === null ? 'disabled' : ''}>Send check-in <span class="btn-pts">+5 pts</span></button>
       ${b && !a ? '<p class="tiny muted" style="margin:0;text-align:center">Demo tip: this is the after-the-break check-in. Send it to see your change.</p>' : ''}
       <a class="card" href="#/support"><span class="card-title" style="font-size:15px">Struggling right now?</span><span class="small muted">See support that's open 24/7, all break.</span></a>
     </div>`;
